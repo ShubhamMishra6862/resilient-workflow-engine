@@ -1,0 +1,56 @@
+#!/bin/sh
+# ----------------------------------------------------------------------------
+# Maven Wrapper script for Unix
+# ----------------------------------------------------------------------------
+
+set -e
+
+# Resolve JAVA_HOME if not already set
+if [ -z "$JAVA_HOME" ]; then
+    if [ -x "/Library/Java/JavaVirtualMachines/jdk-27.jdk/Contents/Home/bin/java" ]; then
+        export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-27.jdk/Contents/Home"
+        export PATH="$JAVA_HOME/bin:$PATH"
+    elif [ -x "/usr/libexec/java_home" ]; then
+        export JAVA_HOME=$(/usr/libexec/java_home 2>/dev/null || true)
+        [ -n "$JAVA_HOME" ] && export PATH="$JAVA_HOME/bin:$PATH"
+    fi
+fi
+
+PRG="$0"
+while [ -h "$PRG" ]; do
+  ls=`ls -ld "$PRG"`
+  link=`expr "$ls" : '.*-> \(.*\)$'`
+  if expr "$link" : '/.*' > /dev/null; then
+    PRG="$link"
+  else
+    PRG=`dirname "$PRG"`/"$link"
+  fi
+done
+BASE_DIR=`dirname "$PRG"`
+
+# Check for existing mvn command
+if command -v mvn >/dev/null 2>&1; then
+    exec mvn "$@"
+fi
+
+# Fallback to downloading or running via maven wrapper
+WRAPPER_DIR="$BASE_DIR/.mvn/wrapper"
+WRAPPER_JAR="$WRAPPER_DIR/maven-wrapper.jar"
+PROPERTIES_FILE="$WRAPPER_DIR/maven-wrapper.properties"
+
+if [ ! -f "$WRAPPER_JAR" ]; then
+    echo "Downloading Maven Wrapper..."
+    WRAPPER_URL=$(grep 'wrapperUrl=' "$PROPERTIES_FILE" | cut -d= -f2)
+    if [ -z "$WRAPPER_URL" ]; then
+        WRAPPER_URL="https://repo.maven.apache.org/maven2/org/apache/maven/wrapper/maven-wrapper/3.3.2/maven-wrapper-3.3.2.jar"
+    fi
+    curl -sSL -o "$WRAPPER_JAR" "$WRAPPER_URL" || true
+fi
+
+if [ -f "$WRAPPER_JAR" ]; then
+    exec java -jar "$WRAPPER_JAR" "$@"
+else
+    echo "Maven or Maven Wrapper jar could not be loaded automatically."
+    echo "Please ensure 'mvn' is installed in PATH or run using a standard Maven / Docker build."
+    exit 1
+fi
